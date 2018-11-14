@@ -16,7 +16,7 @@ So here's a script that can at least compute some summary information::
     unittests_client  min  1.1m, max  7.9m, avg  4.1m, median  4.6m, stdev  2.5m
     unittests_server  min  3.5m, max  6.3m, avg  4.9m, median  5.1m, stdev  0.9m
 
-  Writing to jobs.csv...
+  Writing jobs.csv...
 
 You can then import the CSV file into a spreadsheet and produce nice charts
 like
