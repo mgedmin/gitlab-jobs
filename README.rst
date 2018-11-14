@@ -4,7 +4,7 @@ Show a summary of GitLab job durations
 GitLab CI is nice, but I miss build time trends graphs from Jenkins.
 So here's a script that can at least compute some summary information::
 
-  $ ./gitlab_jobs.py --project 30
+  $ ./gitlab_jobs.py --project 30 --csv jobs.csv
   Last 20 successful pipelines of myproject master:
     ...
 
@@ -15,6 +15,17 @@ So here's a script that can at least compute some summary information::
     test_robot        min 25.4m, max 38.3m, avg 30.0m, median 29.1m, stdev  3.6m
     unittests_client  min  1.1m, max  7.9m, avg  4.1m, median  4.6m, stdev  2.5m
     unittests_server  min  3.5m, max  6.3m, avg  4.9m, median  5.1m, stdev  0.9m
+
+  Writing to jobs.csv...
+
+You can then import the CSV file into a spreadsheet and produce nice charts
+like
+
+.. image:: chart.png
+
+(NB: this chart has the X axis flipped and the Y axis scaled, because that
+makes more sense to me.  The CSV data contains durations in seconds,
+newest first.)
 
 
 Requirements
@@ -54,19 +65,21 @@ Now you can do ::
 Help is available via ::
 
     $ ./gitlab_jobs.py --help
-    usage: gitlab_jobs.py [-h] [--version] [-g GITLAB] -p ID [-b REF] [-l N]
+   usage: gitlab_jobs.py [-h] [--version] [-g GITLAB] -p ID [-b REF] [-l N]
+                         [--csv FILENAME]
 
-    Show GitLab pipeline job durations.
+   Show GitLab pipeline job durations.
 
-    optional arguments:
-      -h, --help            show this help message and exit
-      --version             show program's version number and exit
-      -g GITLAB, --gitlab GITLAB
-                            select configuration section in ~/.python-gitlab.cfg
-      -p ID, --project ID   select GitLab project (you can discover project IDs by
-                            running gitlab project list --all)
-      -b REF, --branch REF, --ref REF
-                            select git branch
-      -l N, --limit N       limit analysis to last N pipelines (max 100)
+   optional arguments:
+     -h, --help            show this help message and exit
+     --version             show program's version number and exit
+     -g GITLAB, --gitlab GITLAB
+                           select configuration section in ~/.python-gitlab.cfg
+     -p ID, --project ID   select GitLab project (you can discover project IDs by
+                           running gitlab project list --all)
+     -b REF, --branch REF, --ref REF
+                           select git branch
+     -l N, --limit N       limit analysis to last N pipelines (max 100)
+     --csv FILENAME        export raw data to CSV file
 
 .. _python-gitlab: https://pypi.org/p/python-gitlab
