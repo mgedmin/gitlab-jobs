@@ -11,8 +11,20 @@ from statistics import mean, median, stdev
 import gitlab
 
 
+__version__ = '0.1'
+
+
 def main():
-    parser = argparse.ArgumentParser(description="")
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        '--version', action='version',
+        # *sigh* argparse converts the \n to a space anyway
+        version="%(prog)s version {version},\n"
+                "python-gitlab version {python_gitlab_version}".format(
+                    version=__version__,
+                    python_gitlab_version=gitlab.__version__,
+                ),
+    )
     parser.add_argument(
         '-g', '--gitlab',
         help='select configuration section in ~/.python-gitlab.cfg',
