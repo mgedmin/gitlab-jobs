@@ -4,6 +4,7 @@ Show GitLab pipeline job durations.
 """
 
 import argparse
+import csv
 from collections import defaultdict
 from statistics import mean, median, stdev
 
@@ -11,7 +12,7 @@ from statistics import mean, median, stdev
 import gitlab
 
 
-__version__ = '0.1'
+__version__ = '0.2'
 
 
 def main():
@@ -41,6 +42,10 @@ def main():
     parser.add_argument(
         '-l', '--limit', metavar='N', default=20, type=int,
         help='limit analysis to last N pipelines (max 100)',
+    )
+    parser.add_argument(
+        '--csv', metavar='FILENAME',
+        help='export raw data to CSV file',
     )
     args = parser.parse_args()
 
@@ -83,6 +88,13 @@ def main():
                 stdev=stdev(durations) / unit[1] if len(durations) > 1 else 0,
             )
         )
+
+    if args.csv:
+        print("\nWriting {filename}...".format(filename=args.csv))
+        with open(args.csv, 'w') as f:
+            writer = csv.writer(f)
+            for job_name, durations in sorted(job_durations.items()):
+                writer.writerow([job_name] + durations)
 
 
 if __name__ == '__main__':
