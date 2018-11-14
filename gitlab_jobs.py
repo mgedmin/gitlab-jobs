@@ -12,7 +12,7 @@ from statistics import mean, median, stdev
 import gitlab
 
 
-__version__ = '0.2'
+__version__ = '0.3'
 
 
 def main():
@@ -25,6 +25,10 @@ def main():
                     version=__version__,
                     python_gitlab_version=gitlab.__version__,
                 ),
+    )
+    parser.add_argument(
+        '-v', '--verbose', action='store_true',
+        help='print more information',
     )
     parser.add_argument(
         '-g', '--gitlab',
@@ -60,9 +64,28 @@ def main():
         scope='finished', status='success', ref=args.branch,
         per_page=args.limit)
     for pipeline in pipelines:
-        print("  {id} (commit {sha})".format(**pipeline.attributes))
+        if args.verbose:
+            template = (
+                "  {id} (commit {sha} by {user[name]},"
+                " duration {duration_min:.1f}m)"
+            )
+            # pipeline data returned in the list contains only a small subset
+            # of information, so we need an extra HTTP GET to fetch duration
+            # and user
+            pipeline = project.pipelines.get(pipeline.id)
+            duration = pipeline.duration
+            duration_min = duration / 60.0
+        else:
+            template = "  {id} (commit {sha})"
+            duration_min = 0.0
+        print(template.format(
+            duration_min=duration_min, **pipeline.attributes))
         for job in pipeline.jobs.list(scope='success', all=True):
             job_durations[job.name].append(job.duration)
+            if args.verbose:
+                print("    {name:30}  {duration_min:4.1f}m".format(
+                    name=job.name,
+                    duration_min=job.duration / 60.0))
 
     print("\nSummary:")
     maxlen = max(len(name) for name in job_durations)
