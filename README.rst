@@ -15,6 +15,7 @@ So here's a script that can at least compute some summary information::
     test_robot        min 25.4m, max 38.3m, avg 30.0m, median 29.1m, stdev  3.6m
     unittests_client  min  1.1m, max  7.9m, avg  4.1m, median  4.6m, stdev  2.5m
     unittests_server  min  3.5m, max  6.3m, avg  4.9m, median  5.1m, stdev  0.9m
+    overall           min 37.4m, max 55.8m, avg 45.6m, median 45.6m, stdev  3.8m
 
   Writing jobs.csv...
 

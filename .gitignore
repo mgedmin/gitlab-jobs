@@ -3,3 +3,4 @@ jobs.csv
 build/
 dist/
 tmp/
+__pycache__/

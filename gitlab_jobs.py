@@ -12,7 +12,7 @@ from statistics import mean, median, stdev
 import gitlab
 
 
-__version__ = '0.3'
+__version__ = '0.4'
 
 
 def main():
@@ -56,6 +56,7 @@ def main():
     gl = gitlab.Gitlab.from_config(args.gitlab)
     project = gl.projects.get(args.project)
 
+    pipeline_durations = []
     job_durations = defaultdict(list)
 
     print("Last {n} successful pipelines of {project} {ref}:".format(
@@ -69,15 +70,14 @@ def main():
                 "  {id} (commit {sha} by {user[name]},"
                 " duration {duration_min:.1f}m)"
             )
-            # pipeline data returned in the list contains only a small subset
-            # of information, so we need an extra HTTP GET to fetch duration
-            # and user
-            pipeline = project.pipelines.get(pipeline.id)
-            duration = pipeline.duration
-            duration_min = duration / 60.0
         else:
-            template = "  {id} (commit {sha})"
-            duration_min = 0.0
+            template = "  {id} (commit {sha}, duration {duration_min:.1f}m)"
+        # pipeline data returned in the list contains only a small subset
+        # of information, so we need an extra HTTP GET to fetch duration
+        # and user
+        pipeline = project.pipelines.get(pipeline.id)
+        pipeline_durations.append(pipeline.duration)
+        duration_min = pipeline.duration / 60.0
         print(template.format(
             duration_min=duration_min, **pipeline.attributes))
         for job in pipeline.jobs.list(scope='success', all=True):
@@ -91,7 +91,8 @@ def main():
     maxlen = max(len(name) for name in job_durations)
     digits = 4.1
     unit = "m", 60.0
-    for job_name, durations in sorted(job_durations.items()):
+    for job_name, durations in (
+            sorted(job_durations.items()) + [('overall', pipeline_durations)]):
         print(
             "  {name:{maxlen}} "
             " min {min:{digits}f}{unit},"
@@ -118,6 +119,7 @@ def main():
             writer = csv.writer(f)
             for job_name, durations in sorted(job_durations.items()):
                 writer.writerow([job_name] + durations)
+            writer.writerow(['overall'] + pipeline_durations)
 
 
 if __name__ == '__main__':
