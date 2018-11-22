@@ -12,7 +12,7 @@ from statistics import mean, median, stdev
 import gitlab
 
 
-__version__ = '0.4'
+__version__ = '0.5'
 
 
 def main():
@@ -86,6 +86,10 @@ def main():
                 print("    {name:30}  {duration_min:4.1f}m".format(
                     name=job.name,
                     duration_min=job.duration / 60.0))
+
+    if not pipeline_durations:
+        print("\nNo pipelines found.")
+        return
 
     print("\nSummary:")
     maxlen = max(len(name) for name in job_durations)
