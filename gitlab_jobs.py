@@ -12,7 +12,7 @@ from statistics import mean, median, stdev
 import gitlab
 
 
-__version__ = '0.5'
+__version__ = '0.6'
 
 
 def main():
@@ -44,6 +44,10 @@ def main():
         help='select git branch',
     )
     parser.add_argument(
+        '--all-branches', action='store_const', const=None, dest='branch',
+        help='do not filter by git branch',
+    )
+    parser.add_argument(
         '-l', '--limit', metavar='N', default=20, type=int,
         help='limit analysis to last N pipelines (max 100)',
     )
@@ -59,19 +63,22 @@ def main():
     pipeline_durations = []
     job_durations = defaultdict(list)
 
-    print("Last {n} successful pipelines of {project} {ref}:".format(
+    if args.branch is None:
+        template = "Last {n} successful pipelines of {project}:"
+    else:
+        template = "Last {n} successful pipelines of {project} {ref}:"
+    print(template.format(
         n=args.limit, ref=args.branch, project=project.name))
     pipelines = project.pipelines.list(
         scope='finished', status='success', ref=args.branch,
         per_page=args.limit)
     for pipeline in pipelines:
+        template = "  {id} (commit {sha}"
         if args.verbose:
-            template = (
-                "  {id} (commit {sha} by {user[name]},"
-                " duration {duration_min:.1f}m)"
-            )
-        else:
-            template = "  {id} (commit {sha}, duration {duration_min:.1f}m)"
+            template += " by {user[name]}"
+        if args.branch is None:
+            template += " on {ref}"
+        template += ", duration {duration_min:.1f}m)"
         # pipeline data returned in the list contains only a small subset
         # of information, so we need an extra HTTP GET to fetch duration
         # and user

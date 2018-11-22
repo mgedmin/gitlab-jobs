@@ -66,8 +66,8 @@ Now you can do ::
 Help is available via ::
 
     $ ./gitlab_jobs.py --help
-    usage: gitlab_jobs.py [-h] [--version] [-v] [-g GITLAB] -p ID [-b REF] [-l N]
-                          [--csv FILENAME]
+    usage: gitlab_jobs.py [-h] [--version] [-v] [-g GITLAB] -p ID [-b REF]
+                          [--all-branches] [-l N] [--csv FILENAME]
 
     Show GitLab pipeline job durations.
 
@@ -81,6 +81,7 @@ Help is available via ::
                             running gitlab project list --all)
       -b REF, --branch REF, --ref REF
                             select git branch
+      --all-branches        do not filter by git branch
       -l N, --limit N       limit analysis to last N pipelines (max 100)
       --csv FILENAME        export raw data to CSV file
 
