@@ -5,7 +5,6 @@ Show GitLab pipeline job durations.
 
 import argparse
 import csv
-import math
 from collections import defaultdict
 from statistics import mean, median, stdev
 
@@ -14,6 +13,21 @@ import gitlab
 
 
 __version__ = '0.6'
+
+
+def get_pipelines(project, args):
+    max_per_page = 100
+    pages = (args.limit + max_per_page - 1) // max_per_page
+    for page in range(1, pages + 1):
+        per_page = max_per_page
+        last_page_leftover = args.limit % max_per_page
+        if page == pages and last_page_leftover != 0:
+            per_page = last_page_leftover
+
+        for pipeline in project.pipelines.list(
+                scope='finished', status='success', ref=args.branch,
+                page=page, per_page=per_page):
+            yield pipeline
 
 
 def main():
@@ -70,39 +84,28 @@ def main():
         template = "Last {n} successful pipelines of {project} {ref}:"
     print(template.format(
         n=args.limit, ref=args.branch, project=project.name))
-
-    max_per_page = 100
-    pages = math.ceil(args.limit / max_per_page)
-    for page in range(1, pages+1):
-        per_page = max_per_page
-        last_page_leftover = args.limit % max_per_page
-        if page == pages and last_page_leftover != 0:
-            per_page = last_page_leftover
-
-        pipelines = project.pipelines.list(
-            scope='finished', status='success', ref=args.branch,
-            page=page, per_page=args.limit)
-        for pipeline in pipelines:
-            template = "  {id} (commit {sha}"
+    pipelines = get_pipelines(project, args)
+    for pipeline in pipelines:
+        template = "  {id} (commit {sha}"
+        if args.verbose:
+            template += " by {user[name]}"
+        if args.branch is None:
+            template += " on {ref}"
+        template += ", duration {duration_min:.1f}m)"
+        # pipeline data returned in the list contains only a small subset
+        # of information, so we need an extra HTTP GET to fetch duration
+        # and user
+        pipeline = project.pipelines.get(pipeline.id)
+        pipeline_durations.append(pipeline.duration)
+        duration_min = pipeline.duration / 60.0
+        print(template.format(
+            duration_min=duration_min, **pipeline.attributes))
+        for job in pipeline.jobs.list(scope='success', all=True):
+            job_durations[job.name].append(job.duration)
             if args.verbose:
-                template += " by {user[name]}"
-            if args.branch is None:
-                template += " on {ref}"
-            template += ", duration {duration_min:.1f}m)"
-            # pipeline data returned in the list contains only a small subset
-            # of information, so we need an extra HTTP GET to fetch duration
-            # and user
-            pipeline = project.pipelines.get(pipeline.id)
-            pipeline_durations.append(pipeline.duration)
-            duration_min = pipeline.duration / 60.0
-            print(template.format(
-                duration_min=duration_min, **pipeline.attributes))
-            for job in pipeline.jobs.list(scope='success', all=True):
-                job_durations[job.name].append(job.duration)
-                if args.verbose:
-                    print("    {name:30}  {duration_min:4.1f}m".format(
-                        name=job.name,
-                        duration_min=job.duration / 60.0))
+                print("    {name:30}  {duration_min:4.1f}m".format(
+                    name=job.name,
+                    duration_min=job.duration / 60.0))
 
     if not pipeline_durations:
         print("\nNo pipelines found.")
