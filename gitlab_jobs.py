@@ -15,6 +15,21 @@ import gitlab
 __version__ = '0.6'
 
 
+def get_pipelines(project, args):
+    max_per_page = 100
+    pages = (args.limit + max_per_page - 1) // max_per_page
+    for page in range(1, pages + 1):
+        per_page = max_per_page
+        last_page_leftover = args.limit % max_per_page
+        if page == pages and last_page_leftover != 0:
+            per_page = last_page_leftover
+
+        for pipeline in project.pipelines.list(
+                scope='finished', status='success', ref=args.branch,
+                page=page, per_page=per_page):
+            yield pipeline
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
@@ -49,7 +64,7 @@ def main():
     )
     parser.add_argument(
         '-l', '--limit', metavar='N', default=20, type=int,
-        help='limit analysis to last N pipelines (max 100)',
+        help='limit analysis to last N pipelines',
     )
     parser.add_argument(
         '--csv', metavar='FILENAME',
@@ -69,9 +84,7 @@ def main():
         template = "Last {n} successful pipelines of {project} {ref}:"
     print(template.format(
         n=args.limit, ref=args.branch, project=project.name))
-    pipelines = project.pipelines.list(
-        scope='finished', status='success', ref=args.branch,
-        per_page=args.limit)
+    pipelines = get_pipelines(project, args)
     for pipeline in pipelines:
         template = "  {id} (commit {sha}"
         if args.verbose:

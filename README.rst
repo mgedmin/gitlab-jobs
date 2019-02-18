@@ -82,7 +82,7 @@ Help is available via ::
       -b REF, --branch REF, --ref REF
                             select git branch
       --all-branches        do not filter by git branch
-      -l N, --limit N       limit analysis to last N pipelines (max 100)
+      -l N, --limit N       limit analysis to last N pipelines
       --csv FILENAME        export raw data to CSV file
 
 
