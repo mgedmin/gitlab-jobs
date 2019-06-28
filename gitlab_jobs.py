@@ -30,6 +30,19 @@ def get_pipelines(project, args):
             yield pipeline
 
 
+def get_jobs(pipeline, scope, all):
+    page = 0
+    while True:
+        page += 1
+
+        jobs = pipeline.jobs.list(
+                scope=scope, all=all, page=page, per_page=100)
+        if len(jobs) == 0:
+            raise StopIteration()
+        for job in jobs:
+            yield job
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
@@ -100,7 +113,7 @@ def main():
         duration_min = pipeline.duration / 60.0
         print(template.format(
             duration_min=duration_min, **pipeline.attributes))
-        for job in pipeline.jobs.list(scope='success', all=True):
+        for job in get_jobs(pipeline, scope='success', all=True):
             job_durations[job.name].append(job.duration)
             if args.verbose:
                 print("    {name:30}  {duration_min:4.1f}m".format(
