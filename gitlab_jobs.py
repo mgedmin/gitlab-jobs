@@ -12,7 +12,7 @@ from statistics import mean, median, stdev
 import gitlab
 
 
-__version__ = '0.6'
+__version__ = '0.6.1'
 
 
 def get_pipelines(project, args):
