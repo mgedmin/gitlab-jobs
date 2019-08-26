@@ -12,7 +12,7 @@ from statistics import mean, median, stdev
 import gitlab
 
 
-__version__ = '0.6.1'
+__version__ = '0.6.2'
 
 
 def get_pipelines(project, args):
@@ -37,8 +37,8 @@ def get_jobs(pipeline, scope, all):
 
         jobs = pipeline.jobs.list(
                 scope=scope, all=all, page=page, per_page=100)
-        if len(jobs) == 0:
-            raise StopIteration()
+        if not jobs:
+            return
         for job in jobs:
             yield job
 
