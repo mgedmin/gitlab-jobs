@@ -5,6 +5,7 @@ Show GitLab pipeline job durations.
 
 import argparse
 import csv
+import itertools
 from collections import defaultdict
 from statistics import mean, median, stdev
 
@@ -12,10 +13,17 @@ from statistics import mean, median, stdev
 import gitlab
 
 
-__version__ = '0.6.2'
+__version__ = '0.7.0'
 
 
 def get_pipelines(project, args):
+    filter_args = {
+        'ref': args.branch
+    }
+    if not args.all_pipelines:
+        filter_args['scope'] = 'finished'
+        filter_args['status'] = 'success'
+
     max_per_page = 100
     pages = (args.limit + max_per_page - 1) // max_per_page
     for page in range(1, pages + 1):
@@ -24,19 +32,21 @@ def get_pipelines(project, args):
         if page == pages and last_page_leftover != 0:
             per_page = last_page_leftover
 
-        for pipeline in project.pipelines.list(
-                scope='finished', status='success', ref=args.branch,
-                page=page, per_page=per_page):
+        for pipeline in project.pipelines.list(page=page, per_page=per_page,
+                                               **filter_args):
             yield pipeline
 
 
-def get_jobs(pipeline, scope, all):
-    page = 0
-    while True:
-        page += 1
+def get_jobs(pipeline, args):
+    filter_args = {
+        'all': True,
+    }
+    if not args.all_pipelines:
+        args['scope'] = 'success'
 
-        jobs = pipeline.jobs.list(
-                scope=scope, all=all, page=page, per_page=100)
+    per_page = 100
+    for page in itertools.count(1):
+        jobs = pipeline.jobs.list(page=page, per_page=per_page, **filter_args)
         if not jobs:
             return
         for job in jobs:
@@ -76,6 +86,10 @@ def main():
         help='do not filter by git branch',
     )
     parser.add_argument(
+        '--all-pipelines', action='store_true',
+        help='include pipelines that were not successful',
+    )
+    parser.add_argument(
         '-l', '--limit', metavar='N', default=20, type=int,
         help='limit analysis to last N pipelines',
     )
@@ -91,12 +105,14 @@ def main():
     pipeline_durations = []
     job_durations = defaultdict(list)
 
+    pipelines = 'pipelines' if args.all_pipelines else 'successful pipelines'
     if args.branch is None:
-        template = "Last {n} successful pipelines of {project}:"
+        template = "Last {n} {pipelines} of {project}:"
     else:
-        template = "Last {n} successful pipelines of {project} {ref}:"
+        template = "Last {n} {pipelines} of {project} {ref}:"
     print(template.format(
-        n=args.limit, ref=args.branch, project=project.name))
+        n=args.limit, pipelines=pipelines, ref=args.branch,
+        project=project.name))
     pipelines = get_pipelines(project, args)
     for pipeline in pipelines:
         template = "  {id} (commit {sha}"
@@ -104,18 +120,23 @@ def main():
             template += " by {user[name]}"
         if args.branch is None:
             template += " on {ref}"
-        template += ", duration {duration_min:.1f}m)"
         # pipeline data returned in the list contains only a small subset
         # of information, so we need an extra HTTP GET to fetch duration
         # and user
         pipeline = project.pipelines.get(pipeline.id)
-        pipeline_durations.append(pipeline.duration)
-        duration_min = pipeline.duration / 60.0
-        print(template.format(
-            duration_min=duration_min, **pipeline.attributes))
-        for job in get_jobs(pipeline, scope='success', all=True):
-            job_durations[job.name].append(job.duration)
-            if args.verbose:
+        if pipeline.duration is not None:
+            template += ", duration {duration_min:.1f}m)"
+            pipeline_durations.append(pipeline.duration)
+            duration_min = pipeline.duration / 60.0
+            print(template.format(
+                duration_min=duration_min, **pipeline.attributes))
+        else:
+            template += ")"
+            print(template.format(**pipeline.attributes))
+        for job in get_jobs(pipeline, args):
+            if job.duration is not None:
+                job_durations[job.name].append(job.duration)
+            if args.verbose and job.duration is not None:
                 print("    {name:30}  {duration_min:4.1f}m".format(
                     name=job.name,
                     duration_min=job.duration / 60.0))
