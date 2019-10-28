@@ -42,7 +42,7 @@ def get_jobs(pipeline, args):
         'all': True,
     }
     if not args.all_pipelines:
-        args['scope'] = 'success'
+        filter_args['scope'] = 'success'
 
     per_page = 100
     for page in itertools.count(1):
