@@ -54,20 +54,20 @@ need the "api" access scope.
 Usage
 -----
 
-You'll need a GitLab project ID.  You can find it by using the command-line
-client from python-gitlab_::
-
-    gitlab project list --all
+You'll need a GitLab project ID.  By default gitlab-jobs tries to guess it
+from the 'origin' git remote URL, if you're running it inside a git checkout.
+Otherwise you'll have to specify it (either as a number like 1234, or as
+"group/project", with the slash between them).
 
 Now you can do ::
 
-    ./gitlab_jobs.py --project ID ...
+    ./gitlab_jobs.py --project GROUP/PROJECT ...
 
 Help is available via ::
 
     $ ./gitlab_jobs.py --help
-    usage: gitlab_jobs.py [-h] [--version] [-v] [-g GITLAB] -p ID [-b REF]
-                          [--all-branches] [-l N] [--csv FILENAME]
+    usage: gitlab_jobs.py [-h] [--version] [-v] [-g GITLAB] [-p ID] [-b REF] [--all-branches]
+                          [--all-pipelines] [-l N] [--csv FILENAME] [--debug]
 
     Show GitLab pipeline job durations.
 
@@ -77,13 +77,14 @@ Help is available via ::
       -v, --verbose         print more information
       -g GITLAB, --gitlab GITLAB
                             select configuration section in ~/.python-gitlab.cfg
-      -p ID, --project ID   select GitLab project (you can discover project IDs by
-                            running gitlab project list --all)
+      -p ID, --project ID   select GitLab project ("group/project" or the numeric ID)
       -b REF, --branch REF, --ref REF
                             select git branch
       --all-branches        do not filter by git branch
+      --all-pipelines       include pipelines that were not successful
       -l N, --limit N       limit analysis to last N pipelines
       --csv FILENAME        export raw data to CSV file
+      --debug               print even more information, for debugging
 
 
 .. _python-gitlab: https://pypi.org/p/python-gitlab
