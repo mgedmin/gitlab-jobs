@@ -6,6 +6,7 @@ Show GitLab pipeline job durations.
 import argparse
 import csv
 import itertools
+import json
 from collections import defaultdict
 from statistics import mean, median, stdev
 
@@ -97,6 +98,10 @@ def main():
         '--csv', metavar='FILENAME',
         help='export raw data to CSV file',
     )
+    parser.add_argument(
+        '--debug', action='store_true',
+        help='print even more information, for debugging',
+    )
     args = parser.parse_args()
 
     gl = gitlab.Gitlab.from_config(args.gitlab)
@@ -133,6 +138,8 @@ def main():
         else:
             template += ")"
             print(template.format(**pipeline.attributes))
+        if args.debug:
+            print("   ", json.dumps(pipeline.attributes))
         for job in get_jobs(pipeline, args):
             if job.duration is not None:
                 job_durations[job.name].append(job.duration)
@@ -140,6 +147,8 @@ def main():
                 print("    {name:30}  {duration_min:4.1f}m".format(
                     name=job.name,
                     duration_min=job.duration / 60.0))
+                if args.debug:
+                    print("     ", json.dumps(job.attributes))
 
     if not pipeline_durations:
         print("\nNo pipelines found.")
