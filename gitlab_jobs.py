@@ -7,6 +7,7 @@ import argparse
 import csv
 import itertools
 import json
+import subprocess
 from collections import defaultdict
 from statistics import mean, median, stdev
 
@@ -14,7 +15,20 @@ from statistics import mean, median, stdev
 import gitlab
 
 
-__version__ = '0.8.0'
+__version__ = '0.9.0'
+
+
+def get_project_name_from_git_url():
+    try:
+        url = subprocess.check_output(['git', 'remote', 'get-url', 'origin'],
+                                      stderr=subprocess.DEVNULL, text=True)
+    except subprocess.CalledProcessError:
+        return None
+    name = '/'.join(url.rsplit('/', 2)[-2:]).rstrip()
+    if name.endswith('.git'):
+        name = name[:-len('.git')]
+    print("Determined the GitLab project to be {name}".format(name=name))
+    return name
 
 
 def get_pipelines(project, args):
@@ -74,9 +88,8 @@ def main():
         help='select configuration section in ~/.python-gitlab.cfg',
     )
     parser.add_argument(
-        '-p', '--project', metavar='ID', required=True,
-        help='select GitLab project (you can discover project IDs by running'
-             ' gitlab project list --all)',
+        '-p', '--project', metavar='ID',
+        help='select GitLab project ("group/project" or the numeric ID)',
     )
     parser.add_argument(
         '-b', '--branch', '--ref', metavar='REF', default='master',
@@ -103,6 +116,12 @@ def main():
         help='print even more information, for debugging',
     )
     args = parser.parse_args()
+
+    if not args.project:
+        args.project = get_project_name_from_git_url()
+
+    if not args.project:
+        parser.error('please specify gitlab project ID, e.g. -p mygroup/hello')
 
     gl = gitlab.Gitlab.from_config(args.gitlab)
     project = gl.projects.get(args.project)
