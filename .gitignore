@@ -4,3 +4,4 @@ build/
 dist/
 tmp/
 __pycache__/
+.tox/

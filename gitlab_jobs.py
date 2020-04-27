@@ -22,7 +22,8 @@ __version__ = '0.9.0'
 def get_project_name_from_git_url():
     try:
         url = subprocess.check_output(['git', 'remote', 'get-url', 'origin'],
-                                      stderr=subprocess.DEVNULL, text=True)
+                                      stderr=subprocess.DEVNULL,
+                                      universal_newlines=True)
     except subprocess.CalledProcessError:
         return None
     if urlparse(url).hostname in ('', 'github.com'):

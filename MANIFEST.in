@@ -1,3 +1,7 @@
 include *.png
 include *.py
 include LICENSE
+
+# added by check_manifest.py
+include pytest.ini
+include tox.ini
