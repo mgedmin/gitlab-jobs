@@ -129,24 +129,28 @@ def main():
         # of information, so we need an extra HTTP GET to fetch duration
         # and user
         pipeline = project.pipelines.get(pipeline.id)
+        attrs = pipeline.attributes
         if pipeline.duration is not None:
             template += ", duration {duration_min:.1f}m)"
             pipeline_durations.append(pipeline.duration)
-            duration_min = pipeline.duration / 60.0
-            print(template.format(
-                duration_min=duration_min, **pipeline.attributes))
+            attrs['duration_min'] = pipeline.duration / 60.0
         else:
             template += ")"
-            print(template.format(**pipeline.attributes))
+        if pipeline.status != 'success':
+            template += ' - {status}'
+        print(template.format_map(attrs))
         if args.debug:
             print("   ", json.dumps(pipeline.attributes))
         for job in get_jobs(pipeline, args):
             if job.duration is not None:
                 job_durations[job.name].append(job.duration)
             if args.verbose and job.duration is not None:
-                print("    {name:30}  {duration_min:4.1f}m".format(
-                    name=job.name,
-                    duration_min=job.duration / 60.0))
+                template = "    {name:30}  {duration_min:4.1f}m"
+                if job.status != 'success':
+                    template += ' - {status}'
+                print(template.format(
+                    duration_min=job.duration / 60.0,
+                    **job.attributes))
                 if args.debug:
                     print("     ", json.dumps(job.attributes))
 
