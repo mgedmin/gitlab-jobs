@@ -10,6 +10,7 @@ import json
 import subprocess
 from collections import defaultdict
 from statistics import mean, median, stdev
+from urllib.parse import urlparse
 
 # pip install python-gitlab
 import gitlab
@@ -23,6 +24,8 @@ def get_project_name_from_git_url():
         url = subprocess.check_output(['git', 'remote', 'get-url', 'origin'],
                                       stderr=subprocess.DEVNULL, text=True)
     except subprocess.CalledProcessError:
+        return None
+    if urlparse(url).hostname in ('', 'github.com'):
         return None
     name = '/'.join(url.rsplit('/', 2)[-2:]).rstrip()
     if name.endswith('.git'):
