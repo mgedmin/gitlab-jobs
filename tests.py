@@ -320,6 +320,11 @@ def test_get_project_name_from_git_url__github(set_git_remote_url):
     assert glj.get_project_name_from_git_url() is None
 
 
+def test_get_project_name_from_git_url__plain_ssh(set_git_remote_url):
+    set_git_remote_url('example:git/unrelated.git')
+    assert glj.get_project_name_from_git_url() is None
+
+
 @pytest.mark.parametrize('url', [
     'https://gitlab.com/mygroup/myproject',
     'https://git.example.com/mygroup/myproject',

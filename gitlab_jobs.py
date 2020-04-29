@@ -26,6 +26,8 @@ def get_project_name_from_git_url() -> Optional[str]:
                                       universal_newlines=True)
     except (OSError, subprocess.CalledProcessError):
         return None
+    if '://' not in url:
+        return None
     if urlparse(url).hostname in ('', 'github.com'):
         return None
     name = '/'.join(url.rsplit('/', 2)[-2:]).rstrip()
