@@ -1,0 +1,7 @@
+[run]
+source = gitlab_jobs
+
+[report]
+exclude_lines =
+    pragma: nocover
+    if __name__ == .__main__.:
