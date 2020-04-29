@@ -7,8 +7,9 @@ python:
 jobs:
   include:
     - env: TOXENV=flake8
-    - env: TOXENV=coverage
     - env: TOXENV=mypy
+    - env: TOXENV=coverage
+      after_script: pip install coveralls && coveralls
 install:
   - pip install tox-travis
 script:
