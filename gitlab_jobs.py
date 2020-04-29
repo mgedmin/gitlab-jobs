@@ -24,7 +24,7 @@ def get_project_name_from_git_url():
         url = subprocess.check_output(['git', 'remote', 'get-url', 'origin'],
                                       stderr=subprocess.DEVNULL,
                                       universal_newlines=True)
-    except subprocess.CalledProcessError:
+    except (OSError, subprocess.CalledProcessError):
         return None
     if urlparse(url).hostname in ('', 'github.com'):
         return None
