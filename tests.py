@@ -1,5 +1,7 @@
+import hashlib
 import subprocess
 import sys
+import textwrap
 from unittest.mock import Mock, MagicMock, call
 
 import gitlab
@@ -13,6 +15,104 @@ def mock_gitlab(monkeypatch):
     gl = MagicMock()
     monkeypatch.setattr(gitlab, 'Gitlab', gl)
     return gl
+
+
+@pytest.fixture(autouse=True)
+def gitlab_project(mock_gitlab):
+    project = mock_gitlab.from_config.return_value.projects.get.return_value
+    project.id = 42
+    project.name = 'example-project'
+    return project
+
+
+@pytest.fixture
+def set_pipelines(gitlab_project):
+    def set_pipelines(pipelines):
+        gitlab_project.pipelines.list.return_value = pipelines
+        gitlab_project.pipelines.get = {
+            pipeline.id: pipeline for pipeline in pipelines
+        }.get
+
+    return set_pipelines
+
+
+def Pipeline(
+    id,
+    sha=None,
+    ref="master",
+    status="success",
+    created_at="2020-04-29T08:31:32.384Z",
+    updated_at="2020-04-29T08:32:14.375Z",
+    web_url="https://gitlab.com/mgedmin/example-project/pipelines/{}",
+    before_sha=None,
+    tag=None,
+    yaml_errors=None,
+    user_id=56,
+    user_name="Marius Gedminas",
+    user_username="mgedmin",
+    user_state="active",
+    user_avatar_url="https://example.com/avatar.png",
+    user_web_url="https://gitlab.com/mgedmin",
+    started_at="2020-04-29T08:31:36.070Z",
+    finished_at="2020-04-29T08:32:14.360Z",
+    committed_at=None,
+    duration=38,  # seconds
+    coverage=None,
+    detailed_status_icon="status_success",
+    detailed_status_text="passed",
+    detailed_status_label="passed",
+    detailed_status_group="success",
+    detailed_status_tooltip="passed",
+    detailed_status_has_details=True,
+    detailed_status_details_path="/mgedmin/example-project/pipelines/{}",
+    detailed_status_illustration=None,
+    detailed_status_favicon="https://example.com/success.png",
+    project_id=42,
+):
+    if sha is None:
+        sha = hashlib.sha1(str(id).encode()).hexdigest()
+    if before_sha is None:
+        before_sha = hashlib.sha1(str(id - 1).encode()).hexdigest()
+    attributes = dict(
+        id=id,
+        sha=sha,
+        ref=ref,
+        status=status,
+        created_at=created_at,
+        updated_at=updated_at,
+        web_url=web_url.format(id),
+        before_sha=before_sha,
+        tag=tag,
+        yaml_errors=yaml_errors,
+        user=dict(
+            id=user_id,
+            name=user_name,
+            username=user_username,
+            state=user_state,
+            avatar_url=user_avatar_url,
+            web_url=user_web_url,
+        ),
+        started_at=started_at,
+        finished_at=finished_at,
+        committed_at=committed_at,
+        duration=duration,
+        coverage=coverage,
+        detailed_status=dict(
+            icon=detailed_status_icon,
+            text=detailed_status_text,
+            label=detailed_status_label,
+            group=detailed_status_group,
+            tooltip=detailed_status_tooltip,
+            has_details=detailed_status_has_details,
+            details_path=detailed_status_details_path.format(id),
+            illustration=detailed_status_illustration,
+            favicon=detailed_status_favicon,
+        ),
+        project_id=project_id,
+    )
+    pipeline = Mock(attributes=attributes, **attributes)
+    pipeline.jobs.list.return_value = []
+    return pipeline
 
 
 @pytest.fixture(autouse=True)
@@ -132,6 +232,66 @@ def test_main_no_project():
         glj.main()
 
 
-def test_main(set_git_remote_url):
+def test_main_no_pipelines(set_git_remote_url, capsys):
     set_git_remote_url('https://gitlab.com/mgedmin/example-project')
     glj.main()
+    assert capsys.readouterr().out == textwrap.dedent('''\
+        Determined the GitLab project to be mgedmin/example-project
+        Last 20 successful pipelines of example-project master:
+
+        No finished pipelines found.
+    ''')
+
+
+def test_main_some_pipelines(set_pipelines, set_git_remote_url, capsys):
+    set_git_remote_url('https://gitlab.com/mgedmin/example-project')
+    set_pipelines([
+        Pipeline(id=2, duration=None),
+        Pipeline(id=1),
+    ])
+    glj.main()
+    assert capsys.readouterr().out == textwrap.dedent('''\
+        Determined the GitLab project to be mgedmin/example-project
+        Last 20 successful pipelines of example-project master:
+          2 (commit da4b9237bacccdf19c0760cab7aec4a8359010b0)
+          1 (commit 356a192b7913b04c54574d18c28d46e6395428ab, duration 0.6m)
+
+        Summary:
+          overall  min  0.6m, max  0.6m, avg  0.6m, median  0.6m, stdev  0.0m
+    ''')
+
+
+def test_main_some_pipelines_all_branches(
+    set_argv, set_pipelines, set_git_remote_url, capsys
+):
+    set_argv(['gitlab-jobs', '--all-branches'])
+    set_git_remote_url('https://gitlab.com/mgedmin/example-project')
+    set_pipelines([
+        Pipeline(id=1, duration=None),
+    ])
+    glj.main()
+    assert capsys.readouterr().out == textwrap.dedent('''\
+        Determined the GitLab project to be mgedmin/example-project
+        Last 20 successful pipelines of example-project:
+          1 (commit 356a192b7913b04c54574d18c28d46e6395428ab on master)
+
+        No finished pipelines found.
+    ''')
+
+
+def test_main_some_pipelines_verbose(
+    set_argv, set_pipelines, set_git_remote_url, capsys
+):
+    set_argv(['gitlab-jobs', '-v'])
+    set_git_remote_url('https://gitlab.com/mgedmin/example-project')
+    set_pipelines([
+        Pipeline(id=1, duration=None),
+    ])
+    glj.main()
+    assert capsys.readouterr().out == textwrap.dedent('''\
+        Determined the GitLab project to be mgedmin/example-project
+        Last 20 successful pipelines of example-project master:
+          1 (commit 356a192b7913b04c54574d18c28d46e6395428ab by Marius Gedminas)
+
+        No finished pipelines found.
+    ''')

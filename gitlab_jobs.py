@@ -178,11 +178,11 @@ def main():
         return
 
     print("\nSummary:")
-    maxlen = max(len(name) for name in job_durations)
+    to_show = sorted(job_durations.items()) + [('overall', pipeline_durations)]
+    maxlen = max(len(name) for name, durations in to_show)
     digits = 4.1
     unit = "m", 60.0
-    for job_name, durations in (
-            sorted(job_durations.items()) + [('overall', pipeline_durations)]):
+    for job_name, durations in to_show:
         print(
             "  {name:{maxlen}} "
             " min {min:{digits}f}{unit},"
