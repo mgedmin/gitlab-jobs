@@ -16,7 +16,7 @@ from urllib.parse import urlparse
 import gitlab
 
 
-__version__ = '1.0'
+__version__ = '1.0.1.dev0'
 
 
 def get_project_name_from_git_url() -> Optional[str]:
