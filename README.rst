@@ -1,6 +1,9 @@
 Show a summary of GitLab job durations
 ======================================
 
+.. image:: https://travis-ci.org/mgedmin/gitlab-jobs.svg?branch=master
+    :target: https://travis-ci.org/mgedmin/gitlab-jobs
+
 GitLab CI is nice, but I miss build time trends graphs from Jenkins.
 So here's a script that can at least compute some summary information::
 
