@@ -10,7 +10,7 @@ Show a summary of GitLab job durations
 GitLab CI is nice, but I miss build time trends graphs from Jenkins.
 So here's a script that can at least compute some summary information::
 
-  $ ./gitlab_jobs.py --project 30 --csv jobs.csv
+  $ gitlab-jobs --csv jobs.csv
   Last 20 successful pipelines of myproject master:
     ...
 
@@ -35,10 +35,13 @@ makes more sense to me.  The CSV data contains durations in seconds,
 newest first.)
 
 
-Requirements
+Installation
 ------------
 
-You need Python 3 and python-gitlab_ (``pip3 install --user python-gitlab``).
+``pip3 install --user gitlab-jobs`` should take care of everything, just make
+sure ~/.local/bin is on your $PATH.
+
+Or you may want to use a script installer like pipx_ (my favourite).
 
 
 Configuration
@@ -63,15 +66,13 @@ Usage
 You'll need a GitLab project ID.  By default gitlab-jobs tries to guess it
 from the 'origin' git remote URL, if you're running it inside a git checkout.
 Otherwise you'll have to specify it (either as a number like 1234, or as
-"group/project", with the slash between them).
+"group/project", with the slash between them) ::
 
-Now you can do ::
-
-    ./gitlab_jobs.py --project GROUP/PROJECT ...
+    gitlab-jobs --project GROUP/PROJECT ...
 
 Help is available via ::
 
-    $ ./gitlab_jobs.py --help
+    $ gitlab-jobs --help
     usage: gitlab_jobs.py [-h] [--version] [-v] [-g GITLAB] [-p ID] [-b REF] [--all-branches]
                           [--all-pipelines] [-l N] [--csv FILENAME] [--debug]
 
@@ -94,3 +95,4 @@ Help is available via ::
 
 
 .. _python-gitlab: https://pypi.org/p/python-gitlab
+.. _pipx: https://pipxproject.github.io/pipx/

@@ -1,7 +1,12 @@
+include *.mk
 include *.png
 include *.py
+include *.rst
+include .coveragerc
+include .gitignore
+include .travis.yml
 include LICENSE
-
-# added by check_manifest.py
+include Makefile
+include mypy.ini
 include pytest.ini
 include tox.ini
