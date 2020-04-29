@@ -6,8 +6,9 @@ python:
   - 3.8
 jobs:
   include:
-    - name: flake8
-      env: TOXENV=flake8
+    - env: TOXENV=flake8
+    - env: TOXENV=coverage
+    - env: TOXENV=mypy
 install:
   - pip install tox-travis
 script:

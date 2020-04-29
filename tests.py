@@ -68,6 +68,7 @@ def Pipeline(
     detailed_status_illustration=None,
     detailed_status_favicon="https://example.com/success.png",
     project_id=42,
+    jobs=(),
 ):
     if sha is None:
         sha = hashlib.sha1(str(id).encode()).hexdigest()
@@ -111,8 +112,166 @@ def Pipeline(
         project_id=project_id,
     )
     pipeline = Mock(attributes=attributes, **attributes)
-    pipeline.jobs.list.return_value = []
+    pipeline.jobs.list.return_value = list(jobs)
+    for job in jobs:
+        job.pipeline_id = pipeline.id
+        job.pipeline = dict(
+            id=pipeline.id,
+            sha=pipeline.sha,
+            ref=pipeline.ref,
+            status=pipeline.status,
+            created_at=pipeline.created_at,
+            updated_at=pipeline.updated_at,
+            web_url=pipeline.web_url,
+        )
     return pipeline
+
+
+def Job(
+    id,
+    status="success",
+    stage="test",
+    name="tests",
+    ref="master",
+    tag=False,
+    coverage=None,
+    allow_failure=False,
+    created_at="2020-04-29T08:31:34.784Z",
+    started_at="2020-04-29T08:31:48.821Z",
+    finished_at="2020-04-29T08:32:05.411Z",
+    duration=16.589658,  # seconds
+    user_id=56,
+    user_name="Marius",
+    user_username="mgedmin",
+    user_state="active",
+    user_avatar_url="https://example.com/avatar.png",
+    user_web_url="https://gitlab.com/mgedmin",
+    user_created_at="2014-12-15T17:06:07.104Z",
+    user_bio="",
+    user_location="",
+    user_public_email="",
+    user_skype="",
+    user_linkedin="",
+    user_twitter="",
+    user_website_url="",
+    user_organization="",
+    user_job_title="",
+    user_work_information=None,
+    commit_id=None,
+    commit_short_id=None,
+    commit_created_at="2020-04-29T11:31:27.000+03:00",
+    commit_parent_ids=(),
+    commit_title="wip",
+    commit_message="wip\n",
+    commit_author_name="Marius Gedminas",
+    commit_author_email="marius@example.com",
+    commit_authored_date="2020-04-29T11:31:27.000+03:00",
+    commit_committer_name="Marius Gedminas",
+    commit_committer_email="marius@example.com",
+    commit_committed_date="2020-04-29T11:31:27.000+03:00",
+    commit_web_url="https://gitlab.com/mgedmin/example-project/-/commit/{}",
+    pipeline_id=None,
+    pipeline_sha=None,
+    pipeline_ref=None,
+    pipeline_status=None,
+    pipeline_created_at=None,
+    pipeline_updated_at=None,
+    pipeline_web_url=None,
+    web_url="https://gitlab.com/mgedmin/example-project/-/jobs/{}",
+    artifacts=(),
+    runner_id=380987,
+    runner_description="shared-runners-manager-6.gitlb.com",
+    runner_ip_address="256.591.75.19",  # ha ha
+    runner_active=True,
+    runner_is_shared=True,
+    runner_name="gitlab-runner",
+    runner_online=True,
+    runner_status="online",
+    artifacts_expire_at=None,
+    project_id=42,
+):
+    attributes = dict(
+        id=id,
+        status=status,
+        stage=stage,
+        name=name,
+        ref=ref,
+        tag=tag,
+        coverage=coverage,
+        allow_failure=allow_failure,
+        created_at=created_at,
+        started_at=started_at,
+        finished_at=finished_at,
+        duration=duration,
+        user=dict(
+            id=user_id,
+            name=user_name,
+            username=user_username,
+            state=user_state,
+            avatar_url=user_avatar_url,
+            web_url=user_web_url,
+            created_at=user_created_at,
+            bio=user_bio,
+            location=user_location,
+            public_email=user_public_email,
+            skype=user_skype,
+            linkedin=user_linkedin,
+            twitter=user_twitter,
+            website_url=user_website_url,
+            organization=user_organization,
+            job_title=user_job_title,
+            work_information=user_work_information,
+        ),
+        commit=dict(
+            id=commit_id,
+            short_id=commit_short_id,
+            created_at=commit_created_at,
+            parent_ids=list(commit_parent_ids),
+            title=commit_title,
+            message=commit_message,
+            author_name=commit_author_name,
+            author_email=commit_author_email,
+            authored_date=commit_authored_date,
+            committer_name=commit_committer_name,
+            committer_email=commit_committer_email,
+            committed_date=commit_committed_date,
+            web_url=commit_web_url.format(commit_id),
+        ),
+        pipeline=dict(
+            id=pipeline_id,
+            sha=pipeline_sha,
+            ref=pipeline_ref,
+            status=pipeline_status,
+            created_at=pipeline_created_at,
+            updated_at=pipeline_updated_at,
+            web_url=pipeline_web_url,
+        ),
+        web_url=web_url.format(id),
+        artifacts=[
+            dict(
+                file_type='trace',
+                size=2198,
+                filename="job.log",
+                file_format=None,
+            ),
+        ] + list(artifacts),
+        runner=dict(
+            id=runner_id,
+            description=runner_description,
+            ip_address=runner_ip_address,
+            active=runner_active,
+            is_shared=runner_is_shared,
+            name=runner_name,
+            online=runner_online,
+            status=runner_status,
+        ),
+        artifacts_expire_at=artifacts_expire_at,
+        project_id=project_id,
+        pipeline_id=pipeline_id,
+    )
+    job = Mock(attributes=attributes, **attributes)
+    job.name = attributes['name']  # Mock(name=...) is something else
+    return job
 
 
 @pytest.fixture(autouse=True)
@@ -285,13 +444,16 @@ def test_main_some_pipelines_verbose(
     set_argv(['gitlab-jobs', '-v'])
     set_git_remote_url('https://gitlab.com/mgedmin/example-project')
     set_pipelines([
-        Pipeline(id=1, duration=None),
+        Pipeline(id=1, duration=None, jobs=[
+            Job(id=1001),
+        ]),
     ])
     glj.main()
     assert capsys.readouterr().out == textwrap.dedent('''\
         Determined the GitLab project to be mgedmin/example-project
         Last 20 successful pipelines of example-project master:
           1 (commit 356a192b7913b04c54574d18c28d46e6395428ab by Marius)
+            tests                            0.3m
 
         No finished pipelines found.
     ''')
@@ -318,10 +480,12 @@ def test_main_some_pipelines_all_statuses(
 def test_main_some_pipelines_debug(
     set_argv, set_pipelines, set_git_remote_url,
 ):
-    set_argv(['gitlab-jobs', '--debug'])
+    set_argv(['gitlab-jobs', '--verbose', '--debug'])
     set_git_remote_url('https://gitlab.com/mgedmin/example-project')
     set_pipelines([
-        Pipeline(id=1, duration=None, status='failed'),
+        Pipeline(id=1, duration=None, jobs=[
+            Job(id=1001, status='failed'),
+        ]),
     ])
     glj.main()
 
@@ -332,7 +496,9 @@ def test_main_some_pipelines_csv_export(
     set_argv(['gitlab-jobs', '--csv', str(tmp_path / "jobs.csv")])
     set_git_remote_url('https://gitlab.com/mgedmin/example-project')
     set_pipelines([
-        Pipeline(id=1),
+        Pipeline(id=1, jobs=[
+            Job(id=1001),
+        ]),
     ])
     glj.main()
     stdout = capsys.readouterr().out.replace(str(tmp_path), '/tmp')
@@ -342,7 +508,12 @@ def test_main_some_pipelines_csv_export(
           1 (commit 356a192b7913b04c54574d18c28d46e6395428ab, duration 0.6m)
 
         Summary:
+          tests    min  0.3m, max  0.3m, avg  0.3m, median  0.3m, stdev  0.0m
           overall  min  0.6m, max  0.6m, avg  0.6m, median  0.6m, stdev  0.0m
 
         Writing /tmp/jobs.csv...
+    ''')
+    assert (tmp_path / "jobs.csv").read_text() == textwrap.dedent('''\
+      tests,16.589658
+      overall,38
     ''')
