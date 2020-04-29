@@ -48,7 +48,7 @@ def Pipeline(
     tag=None,
     yaml_errors=None,
     user_id=56,
-    user_name="Marius Gedminas",
+    user_name="Marius",
     user_username="mgedmin",
     user_state="active",
     user_avatar_url="https://example.com/avatar.png",
@@ -291,7 +291,58 @@ def test_main_some_pipelines_verbose(
     assert capsys.readouterr().out == textwrap.dedent('''\
         Determined the GitLab project to be mgedmin/example-project
         Last 20 successful pipelines of example-project master:
-          1 (commit 356a192b7913b04c54574d18c28d46e6395428ab by Marius Gedminas)
+          1 (commit 356a192b7913b04c54574d18c28d46e6395428ab by Marius)
 
         No finished pipelines found.
+    ''')
+
+
+def test_main_some_pipelines_all_statuses(
+    set_argv, set_pipelines, set_git_remote_url, capsys
+):
+    set_argv(['gitlab-jobs', '--all-pipelines'])
+    set_git_remote_url('https://gitlab.com/mgedmin/example-project')
+    set_pipelines([
+        Pipeline(id=1, duration=None, status='failed'),
+    ])
+    glj.main()
+    assert capsys.readouterr().out == textwrap.dedent('''\
+        Determined the GitLab project to be mgedmin/example-project
+        Last 20 pipelines of example-project master:
+          1 (commit 356a192b7913b04c54574d18c28d46e6395428ab) - failed
+
+        No finished pipelines found.
+    ''')
+
+
+def test_main_some_pipelines_debug(
+    set_argv, set_pipelines, set_git_remote_url,
+):
+    set_argv(['gitlab-jobs', '--debug'])
+    set_git_remote_url('https://gitlab.com/mgedmin/example-project')
+    set_pipelines([
+        Pipeline(id=1, duration=None, status='failed'),
+    ])
+    glj.main()
+
+
+def test_main_some_pipelines_csv_export(
+    set_argv, set_pipelines, set_git_remote_url, capsys, tmp_path
+):
+    set_argv(['gitlab-jobs', '--csv', str(tmp_path / "jobs.csv")])
+    set_git_remote_url('https://gitlab.com/mgedmin/example-project')
+    set_pipelines([
+        Pipeline(id=1),
+    ])
+    glj.main()
+    stdout = capsys.readouterr().out.replace(str(tmp_path), '/tmp')
+    assert stdout == textwrap.dedent('''\
+        Determined the GitLab project to be mgedmin/example-project
+        Last 20 successful pipelines of example-project master:
+          1 (commit 356a192b7913b04c54574d18c28d46e6395428ab, duration 0.6m)
+
+        Summary:
+          overall  min  0.6m, max  0.6m, avg  0.6m, median  0.6m, stdev  0.0m
+
+        Writing /tmp/jobs.csv...
     ''')
