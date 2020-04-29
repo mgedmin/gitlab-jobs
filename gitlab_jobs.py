@@ -10,6 +10,7 @@ import json
 import subprocess
 from collections import defaultdict
 from statistics import mean, median, stdev
+from typing import Optional, Iterable
 from urllib.parse import urlparse
 
 # pip install python-gitlab
@@ -19,7 +20,7 @@ import gitlab
 __version__ = '0.9.0'
 
 
-def get_project_name_from_git_url():
+def get_project_name_from_git_url() -> Optional[str]:
     try:
         url = subprocess.check_output(['git', 'remote', 'get-url', 'origin'],
                                       stderr=subprocess.DEVNULL,
@@ -35,7 +36,10 @@ def get_project_name_from_git_url():
     return name
 
 
-def get_pipelines(project, args):
+def get_pipelines(
+    project: 'gitlab.v4.objects.Project',
+    args: argparse.Namespace,
+) -> Iterable['gitlab.v4.objects.ProjectPipeline']:
     filter_args = {
         'ref': args.branch
     }
@@ -72,53 +76,55 @@ def get_jobs(pipeline, args):
             yield job
 
 
+parser = argparse.ArgumentParser(description=__doc__)
+parser.add_argument(
+    '--version', action='version',
+    # *sigh* argparse converts the \n to a space anyway
+    version="%(prog)s version {version},\n"
+            "python-gitlab version {python_gitlab_version}".format(
+                version=__version__,
+                python_gitlab_version=gitlab.__version__,
+            ),
+)
+parser.add_argument(
+    '-v', '--verbose', action='store_true',
+    help='print more information',
+)
+parser.add_argument(
+    '-g', '--gitlab',
+    help='select configuration section in ~/.python-gitlab.cfg',
+)
+parser.add_argument(
+    '-p', '--project', metavar='ID',
+    help='select GitLab project ("group/project" or the numeric ID)',
+)
+parser.add_argument(
+    '-b', '--branch', '--ref', metavar='REF', default='master',
+    help='select git branch',
+)
+parser.add_argument(
+    '--all-branches', action='store_const', const=None, dest='branch',
+    help='do not filter by git branch',
+)
+parser.add_argument(
+    '--all-pipelines', action='store_true',
+    help='include pipelines that were not successful',
+)
+parser.add_argument(
+    '-l', '--limit', metavar='N', default=20, type=int,
+    help='limit analysis to last N pipelines',
+)
+parser.add_argument(
+    '--csv', metavar='FILENAME',
+    help='export raw data to CSV file',
+)
+parser.add_argument(
+    '--debug', action='store_true',
+    help='print even more information, for debugging',
+)
+
+
 def main():
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument(
-        '--version', action='version',
-        # *sigh* argparse converts the \n to a space anyway
-        version="%(prog)s version {version},\n"
-                "python-gitlab version {python_gitlab_version}".format(
-                    version=__version__,
-                    python_gitlab_version=gitlab.__version__,
-                ),
-    )
-    parser.add_argument(
-        '-v', '--verbose', action='store_true',
-        help='print more information',
-    )
-    parser.add_argument(
-        '-g', '--gitlab',
-        help='select configuration section in ~/.python-gitlab.cfg',
-    )
-    parser.add_argument(
-        '-p', '--project', metavar='ID',
-        help='select GitLab project ("group/project" or the numeric ID)',
-    )
-    parser.add_argument(
-        '-b', '--branch', '--ref', metavar='REF', default='master',
-        help='select git branch',
-    )
-    parser.add_argument(
-        '--all-branches', action='store_const', const=None, dest='branch',
-        help='do not filter by git branch',
-    )
-    parser.add_argument(
-        '--all-pipelines', action='store_true',
-        help='include pipelines that were not successful',
-    )
-    parser.add_argument(
-        '-l', '--limit', metavar='N', default=20, type=int,
-        help='limit analysis to last N pipelines',
-    )
-    parser.add_argument(
-        '--csv', metavar='FILENAME',
-        help='export raw data to CSV file',
-    )
-    parser.add_argument(
-        '--debug', action='store_true',
-        help='print even more information, for debugging',
-    )
     args = parser.parse_args()
 
     if not args.project:
