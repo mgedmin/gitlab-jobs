@@ -61,19 +61,10 @@ def get_pipelines(
 
 
 def get_jobs(pipeline, args):
-    filter_args = {
-        'all': True,
-    }
+    filter_args = {}
     if not args.all_pipelines:
         filter_args['scope'] = 'success'
-
-    per_page = 100
-    for page in itertools.count(1):
-        jobs = pipeline.jobs.list(page=page, per_page=per_page, **filter_args)
-        if not jobs:
-            return
-        for job in jobs:
-            yield job
+    return pipeline.jobs.list(all=True, **filter_args)
 
 
 parser = argparse.ArgumentParser(description=__doc__)
@@ -184,7 +175,7 @@ def main():
                     print("     ", json.dumps(job.attributes))
 
     if not pipeline_durations:
-        print("\nNo pipelines found.")
+        print("\nNo finished pipelines found.")
         return
 
     print("\nSummary:")

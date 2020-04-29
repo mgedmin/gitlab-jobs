@@ -85,3 +85,12 @@ def test_get_pipelines_many_pages_different_branch():
     assert project.pipelines.list.call_args_list == [
         call(page=1, per_page=20, ref='foo'),
     ]
+
+
+def test_get_jobs():
+    pipeline = MagicMock()
+    args = glj.parser.parse_args([])
+    list(glj.get_jobs(pipeline, args))
+    assert pipeline.jobs.list.call_args_list == [
+        call(all=True, scope='success')
+    ]
