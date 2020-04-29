@@ -5,7 +5,6 @@ Show GitLab pipeline job durations.
 
 import argparse
 import csv
-import itertools
 import json
 import subprocess
 from collections import defaultdict
