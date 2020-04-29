@@ -28,7 +28,7 @@ So here's a script that can at least compute some summary information::
 You can then import the CSV file into a spreadsheet and produce nice charts
 like
 
-.. image:: chart.png
+.. image:: https://github.com/mgedmin/gitlab-jobs/raw/master/chart.png
 
 (NB: this chart has the X axis flipped and the Y axis scaled, because that
 makes more sense to me.  The CSV data contains durations in seconds,
