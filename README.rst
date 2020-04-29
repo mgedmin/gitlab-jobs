@@ -54,7 +54,7 @@ Create a ``~/.python-gitlab.cfg`` like this::
    private_token = ...
 
 You can create a private access token in your GitLab profile settings.  It'll
-need the "api" access scope.
+need the "read_api" access scope.
 
 
 Usage
