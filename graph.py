@@ -29,7 +29,7 @@ def load_csv(filename):
 
 
 def disable_sigint_handling():
-    # matplotlib uses tkiter which handles signals only when the window is
+    # matplotlib uses tkinter which handles signals only when the window is
     # focused, making it awkward to abort the script with a ^C when you focus
     # the terminal where the script is running.
     signal.signal(signal.SIGINT, signal.SIG_DFL)
@@ -37,9 +37,10 @@ def disable_sigint_handling():
 
 def plot_jobs(jobs, select, exclude):
     mpl.style.use('seaborn')
-    plt.title('Duration of build jobs')
-    plt.ylabel('minutes')
-    plt.xlabel('builds (newest on the right)')
+    fig, ax = plt.subplots()
+    ax.set_title('Duration of build jobs')
+    ax.set_ylabel('minutes')
+    ax.set_xlabel('builds (newest on the right)')
     xmin = xmax = 1
     ymin = ymax = 0
     for job, durations in jobs:
@@ -51,10 +52,11 @@ def plot_jobs(jobs, select, exclude):
         xmax = max(xmax, len(durations))
         ys = [duration / 60.0 for duration in durations[::-1]]
         ymax = max(ymax, math.ceil(max(ys)))
-        plt.plot(xs, ys, label=job)
-    plt.xticks(range(xmin, xmax + 1))
-    plt.axis([xmin, xmax, ymin, ymax])
-    plt.legend()
+        ax.plot(xs, ys, label=job)
+    ax.set_xlim(xmin=xmin, xmax=xmax)
+    ax.set_ylim(ymin=ymin, ymax=ymax)
+    ax.xaxis.set_major_locator(plt.MaxNLocator(nbins=20, integer=True))
+    ax.legend()
     plt.show()
 
 
