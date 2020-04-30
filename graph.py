@@ -13,7 +13,7 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 
 
-__version__ = '0.1.0'
+__version__ = '0.2.0'
 
 
 def load_csv(filename):
@@ -35,7 +35,7 @@ def disable_sigint_handling():
     signal.signal(signal.SIGINT, signal.SIG_DFL)
 
 
-def plot_jobs(jobs, select, exclude):
+def plot_jobs(jobs, *, select, exclude, last):
     mpl.style.use('seaborn')
     fig, ax = plt.subplots()
     ax.set_title('Duration of build jobs')
@@ -48,6 +48,8 @@ def plot_jobs(jobs, select, exclude):
             continue
         if exclude and job in exclude:
             continue
+        if last:
+            durations = durations[:last]
         xs = list(range(1, 1 + len(durations)))
         xmax = max(xmax, len(durations))
         ys = [duration / 60.0 for duration in durations[::-1]]
@@ -84,13 +86,18 @@ def main():
             "One or more job names to exclude from the plot (e.g. -x overall)"
         ),
     )
+    parser.add_argument(
+        "-l", "--last", metavar='N', type=int,
+        help="Limit the graph to the last N jobs (default: unlimited)",
+    )
     args = parser.parse_args()
 
     jobs = load_csv(args.filename)
 
     disable_sigint_handling()
 
-    plot_jobs(jobs, select=args.jobs, exclude=args.exclude_jobs)
+    plot_jobs(jobs, select=args.jobs, exclude=args.exclude_jobs,
+              last=args.last)
 
 
 if __name__ == "__main__":
