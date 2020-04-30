@@ -36,11 +36,12 @@ def disable_sigint_handling():
 
 
 def plot_jobs(jobs, *, select, exclude, last):
-    mpl.style.use('seaborn')
     fig, ax = plt.subplots()
-    ax.set_title('Duration of build jobs')
-    ax.set_ylabel('minutes')
-    ax.set_xlabel('builds (newest on the right)')
+    ax.set_title('Duration of build jobs (minutes)', color='#808080',
+                 pad=8, fontdict=dict(fontsize=14))
+    ax.set_xlabel('builds (newest on the right)', color='#404040',
+                  labelpad=16)
+    ax.set_frame_on(False)
     xmin = xmax = 1
     ymin = ymax = 0
     for job, durations in jobs:
@@ -54,10 +55,23 @@ def plot_jobs(jobs, *, select, exclude, last):
         xmax = max(xmax, len(durations))
         ys = [duration / 60.0 for duration in durations[::-1]]
         ymax = max(ymax, math.ceil(max(ys)))
-        ax.plot(xs, ys, label=job)
+        xs[0] -= 0.5
+        xs[-1] += 0.5
+        ax.step(xs, ys, label=job, where='mid')
+        ax.fill_between(xs, ys, step='mid', alpha=0.3)
+    xmin -= 0.5
+    xmax += 0.5
     ax.set_xlim(xmin=xmin, xmax=xmax)
-    ax.set_ylim(ymin=ymin, ymax=ymax)
+    ax.set_ylim(ymin=ymin)
     ax.xaxis.set_major_locator(plt.MaxNLocator(nbins=20, integer=True))
+    ax.set_axisbelow(True)
+    ax.grid(axis='y', color='#cccccc')
+    # there's no gridline drawn at y=0 so we draw one manually
+    # and also make it darker
+    ax.axhline(0, color='#808080')
+    # the tick at y=0 is not aligned with the gridline at y=0, so we make the
+    # ticks invisible
+    ax.tick_params(color='#ffffff', labelcolor='#808080', labelbottom=False)
     ax.legend()
     plt.show()
 
