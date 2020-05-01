@@ -29,7 +29,7 @@ setup(
     long_description=long_description,
     keywords='',
     classifiers=[
-        'Development Status :: 3 - Alpha',
+        "Development Status :: 4 - Beta",
         'Environment :: Console',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: GNU General Public License (GPL)',
@@ -39,6 +39,8 @@ setup(
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
+        "Programming Language :: Python :: Implementation :: CPython",
+        "Programming Language :: Python :: Implementation :: PyPy",
     ],
     license='GPL',
     python_requires=">=3.5",
