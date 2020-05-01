@@ -498,7 +498,8 @@ def test_main_some_pipelines_debug(
 def test_main_some_pipelines_csv_export(
     set_argv, set_pipelines, set_git_remote_url, capsys, tmp_path
 ):
-    set_argv(['gitlab-jobs', '--csv', str(tmp_path / "jobs.csv")])
+    jobs_csv = tmp_path / "jobs.csv"
+    set_argv(['gitlab-jobs', '--csv', str(jobs_csv)])
     set_git_remote_url('https://gitlab.com/mgedmin/example-project')
     set_pipelines([
         Pipeline(id=1, jobs=[
@@ -506,7 +507,7 @@ def test_main_some_pipelines_csv_export(
         ]),
     ])
     glj.main()
-    stdout = capsys.readouterr().out.replace(str(tmp_path), '/tmp')
+    stdout = capsys.readouterr().out.replace(str(jobs_csv), '/tmp/jobs.csv')
     assert stdout == textwrap.dedent('''\
         Determined the GitLab project to be mgedmin/example-project
         Last 20 successful pipelines of example-project master:
@@ -518,7 +519,7 @@ def test_main_some_pipelines_csv_export(
 
         Writing /tmp/jobs.csv...
     ''')
-    assert (tmp_path / "jobs.csv").read_text() == textwrap.dedent('''\
+    assert jobs_csv.read_text() == textwrap.dedent('''\
       tests,16.589658
       overall,38
     ''')
