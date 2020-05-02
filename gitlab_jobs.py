@@ -207,7 +207,7 @@ def main():
 
     if args.csv:
         print("\nWriting {filename}...".format(filename=args.csv))
-        with open(args.csv, 'w') as f:
+        with open(args.csv, 'w', newline='') as f:
             writer = csv.writer(f)
             for job_name, durations in sorted(job_durations.items()):
                 writer.writerow([job_name] + durations)
