@@ -10,3 +10,6 @@ include Makefile
 include mypy.ini
 include pytest.ini
 include tox.ini
+
+# added by check_manifest.py
+include *.yml
