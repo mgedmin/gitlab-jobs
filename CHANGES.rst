@@ -1,7 +1,7 @@
 Changelog
 ==========
 
-1.0.2 (unreleased)
+1.1.0 (2020-05-04)
 ------------------
 
 - Recognize simple hostname:path git URLs (GH: #3).
