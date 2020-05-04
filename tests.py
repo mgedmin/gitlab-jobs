@@ -417,8 +417,8 @@ def test_main_some_pipelines(set_pipelines, set_git_remote_url, capsys):
     assert capsys.readouterr().out == textwrap.dedent('''\
         Determined the GitLab project to be mgedmin/example-project
         Last 20 successful pipelines of example-project master:
-          2 (commit da4b9237bacccdf19c0760cab7aec4a8359010b0)
-          1 (commit 356a192b7913b04c54574d18c28d46e6395428ab, duration 0.6m)
+          2 (2020-04-29, commit da4b9237)
+          1 (2020-04-29, commit 356a192b, duration 0.6m)
 
         Summary:
           overall  min  0.6m, max  0.6m, avg  0.6m, median  0.6m, stdev  0.0m
@@ -437,7 +437,7 @@ def test_main_some_pipelines_all_branches(
     assert capsys.readouterr().out == textwrap.dedent('''\
         Determined the GitLab project to be mgedmin/example-project
         Last 20 successful pipelines of example-project:
-          1 (commit 356a192b7913b04c54574d18c28d46e6395428ab on master)
+          1 (2020-04-29, commit 356a192b on master)
 
         No finished pipelines found.
     ''')
@@ -457,7 +457,7 @@ def test_main_some_pipelines_verbose(
     assert capsys.readouterr().out == textwrap.dedent('''\
         Determined the GitLab project to be mgedmin/example-project
         Last 20 successful pipelines of example-project master:
-          1 (commit 356a192b7913b04c54574d18c28d46e6395428ab by Marius)
+          1 (2020-04-29, commit 356a192b by Marius)
             tests                            0.3m
 
         No finished pipelines found.
@@ -476,7 +476,7 @@ def test_main_some_pipelines_all_statuses(
     assert capsys.readouterr().out == textwrap.dedent('''\
         Determined the GitLab project to be mgedmin/example-project
         Last 20 pipelines of example-project master:
-          1 (commit 356a192b7913b04c54574d18c28d46e6395428ab) - failed
+          1 (2020-04-29, commit 356a192b) - failed
 
         No finished pipelines found.
     ''')
@@ -511,7 +511,7 @@ def test_main_some_pipelines_csv_export(
     assert stdout == textwrap.dedent('''\
         Determined the GitLab project to be mgedmin/example-project
         Last 20 successful pipelines of example-project master:
-          1 (commit 356a192b7913b04c54574d18c28d46e6395428ab, duration 0.6m)
+          1 (2020-04-29, commit 356a192b, duration 0.6m)
 
         Summary:
           tests    min  0.3m, max  0.3m, avg  0.3m, median  0.3m, stdev  0.0m

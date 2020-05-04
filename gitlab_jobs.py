@@ -141,7 +141,7 @@ def main():
         project=project.name))
     pipelines = get_pipelines(project, args)
     for pipeline in pipelines:
-        template = "  {id} (commit {sha}"
+        template = "  {id} ({date}, commit {sha_short}"
         if args.verbose:
             template += " by {user[name]}"
         if args.branch is None:
@@ -159,6 +159,8 @@ def main():
             template += ")"
         if pipeline.status != 'success':
             template += ' - {status}'
+        attrs['sha_short'] = attrs['sha'][:8]
+        attrs['date'] = attrs['created_at'][:len('YYYY-MM-DD')]
         print(template.format_map(attrs))
         if args.debug:
             print("   ", json.dumps(pipeline.attributes))

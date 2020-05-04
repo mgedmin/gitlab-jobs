@@ -6,6 +6,9 @@ Changelog
 
 - Recognize simple hostname:path git URLs (GH: #3).
 
+- Change output format to show pipeline dates and short Git commit IDs instead
+  of full Git commit IDs.
+
 
 1.0.1 (2020-04-29)
 ------------------
