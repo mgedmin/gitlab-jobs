@@ -9,7 +9,6 @@ import math
 import signal
 
 # apt install python3-matplotlib
-import matplotlib as mpl
 import matplotlib.pyplot as plt
 
 
