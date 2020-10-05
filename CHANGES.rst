@@ -1,10 +1,10 @@
 Changelog
 ==========
 
-1.1.1 (unreleased)
+1.2.0 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Drop Python 3.5 support.
 
 
 1.1.0 (2020-05-04)
