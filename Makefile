@@ -1,16 +1,11 @@
-.PHONY: help
-help:
-	@echo "make test        run tests"
-	@echo "make coverage    measure test coverage"
-	@echo "make release     publish a new release to PyPI"
-
-.PHONY: test check
-test check:
+.PHONY: test
+test:                           ##: run tests
 	tox -p auto
 
 .PHONY: coverage
-coverage:
+coverage:                       ##: measure test coverage
 	tox -e coverage
 
-PYTHON = python3
+
+FILE_WITH_VERSION = gitlab_jobs.py
 include release.mk
