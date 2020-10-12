@@ -87,7 +87,7 @@ def plot_jobs(jobs: List[JobInfo], *, last: int = None) -> None:
     # the tick at y=0 is not aligned with the gridline at y=0, so we make the
     # ticks invisible
     ax.tick_params(color='#ffffff', labelcolor='#808080', labelbottom=False)
-    ax.legend()
+    ax.legend(frameon=False)
     plt.show()
 
 
