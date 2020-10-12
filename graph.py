@@ -7,15 +7,19 @@ import argparse
 import csv
 import math
 import signal
+import sys
+from typing import List, Tuple
 
 # apt install python3-matplotlib
 import matplotlib.pyplot as plt
 
+__version__ = '0.3.0'
 
-__version__ = '0.2.0'
+
+JobInfo = Tuple[str, List[float]]
 
 
-def load_csv(filename):
+def load_csv(filename: str) -> List[JobInfo]:
     jobs = []
     with open(filename) as f:
         reader = csv.reader(f)
@@ -27,30 +31,42 @@ def load_csv(filename):
     return jobs
 
 
-def disable_sigint_handling():
+def filter_jobs(
+    jobs: List[JobInfo],
+    *,
+    select: List[str] = None,
+    exclude: List[str] = None,
+) -> List[JobInfo]:
+    result = []
+    for job, durations in jobs:
+        if select and job not in select:
+            continue
+        if exclude and job in exclude:
+            continue
+        result.append((job, durations))
+    return result
+
+
+def disable_sigint_handling() -> None:
     # matplotlib uses tkinter which handles signals only when the window is
     # focused, making it awkward to abort the script with a ^C when you focus
     # the terminal where the script is running.
     signal.signal(signal.SIGINT, signal.SIG_DFL)
 
 
-def plot_jobs(jobs, *, select, exclude, last):
+def plot_jobs(jobs: List[JobInfo], *, last: int = None) -> None:
     fig, ax = plt.subplots()
     ax.set_title('Duration of build jobs (minutes)', color='#808080',
                  pad=8, fontdict=dict(fontsize=14))
     ax.set_xlabel('builds (newest on the right)', color='#404040',
                   labelpad=16)
     ax.set_frame_on(False)
-    xmin = xmax = 1
+    xmin = xmax = 1  # type: float
     ymin = ymax = 0
     for job, durations in jobs:
-        if select and job not in select:
-            continue
-        if exclude and job in exclude:
-            continue
         if last:
             durations = durations[:last]
-        xs = list(range(1, 1 + len(durations)))
+        xs = list(range(1, 1 + len(durations)))  # type: List[float]
         xmax = max(xmax, len(durations))
         ys = [duration / 60.0 for duration in durations[::-1]]
         ymax = max(ymax, math.ceil(max(ys)))
@@ -75,7 +91,7 @@ def plot_jobs(jobs, *, select, exclude, last):
     plt.show()
 
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(description="Plot job durations")
     parser.add_argument(
         "--version", action="version",
@@ -107,10 +123,17 @@ def main():
 
     jobs = load_csv(args.filename)
 
+    filtered_jobs = filter_jobs(
+        jobs, select=args.jobs, exclude=args.exclude_jobs)
+    if jobs and not filtered_jobs:
+        print(f"No jobs selected.  Job names in {args.filename}:")
+        for job_name, durations in jobs:
+            print(f"  {job_name}")
+        sys.exit(1)
+
     disable_sigint_handling()
 
-    plot_jobs(jobs, select=args.jobs, exclude=args.exclude_jobs,
-              last=args.last)
+    plot_jobs(filtered_jobs, last=args.last)
 
 
 if __name__ == "__main__":
