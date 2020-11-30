@@ -48,11 +48,11 @@ jobs:
         run: |
           python -m pip install -U pip
           python -m pip install -U setuptools wheel
-          python -m pip install -U tox tox-gh-actions
-          python -m pip install -U coveralls
+          python -m pip install -U coverage coveralls pytest
+          python -m pip install -e .
 
       - name: Run tests
-        run: tox
+        run: coverage run -m pytest
 
       - name: Check test coverage
         run: coverage report -m --fail-under=100
