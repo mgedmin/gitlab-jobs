@@ -1,8 +1,8 @@
 Show a summary of GitLab job durations
 ======================================
 
-.. image:: https://travis-ci.com/mgedmin/gitlab-jobs.svg?branch=master
-    :target: https://travis-ci.com/mgedmin/gitlab-jobs
+.. image:: https://github.com/mgedmin/gitlab-jobs/workflows/build/badge.svg?branch=master
+    :target: https://github.com/mgedmin/gitlab-jobs/actions
 
 .. image:: https://coveralls.io/repos/mgedmin/gitlab-jobs/badge.svg?branch=master
     :target: https://coveralls.io/r/mgedmin/gitlab-jobs
