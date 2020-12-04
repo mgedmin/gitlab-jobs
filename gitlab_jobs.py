@@ -9,7 +9,7 @@ import json
 import subprocess
 from collections import defaultdict
 from statistics import mean, median, stdev
-from typing import Optional, Iterable
+from typing import Iterable, Optional
 from urllib.parse import urlparse
 
 # pip install python-gitlab

@@ -83,6 +83,7 @@ jobs:
         toxenv:
           - flake8
           - mypy
+          - isort
 
     steps:
       - name: Git clone

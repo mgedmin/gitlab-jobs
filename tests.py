@@ -2,7 +2,7 @@ import hashlib
 import subprocess
 import sys
 import textwrap
-from unittest.mock import Mock, MagicMock, call
+from unittest.mock import MagicMock, Mock, call
 
 import gitlab
 import pytest
