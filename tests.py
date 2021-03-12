@@ -385,6 +385,14 @@ def test_get_jobs():
     ]
 
 
+@pytest.mark.parametrize('status, expected', [
+    ('success', '\033[32msuccess\033[0m'),
+    ('skipped', 'skipped'),
+])
+def test_fmt_status(status, expected):
+    assert glj.fmt_status(status) == expected
+
+
 def test_main__help(set_argv):
     set_argv(['gitlab-jobs', '--help'])
     with pytest.raises(SystemExit):
