@@ -47,7 +47,10 @@ setup(
 
     py_modules=['gitlab_jobs'],
     zip_safe=False,
-    install_requires=['python-gitlab'],
+    install_requires=[
+        'python-gitlab',
+        'colorama',
+    ],
     entry_points={
         'console_scripts': [
             'gitlab-jobs = gitlab_jobs:main',

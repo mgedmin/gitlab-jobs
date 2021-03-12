@@ -8,6 +8,8 @@ Changelog
 
 - Drop Python 3.5 support.
 
+- Colorized pipeline and job status output.
+
 
 1.1.0 (2020-05-04)
 ------------------

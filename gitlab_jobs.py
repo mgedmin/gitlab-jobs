@@ -12,7 +12,7 @@ from statistics import mean, median, stdev
 from typing import Iterable, Optional
 from urllib.parse import urlparse
 
-# pip install python-gitlab
+import colorama
 import gitlab
 
 
@@ -68,6 +68,21 @@ def get_jobs(pipeline, args):
     return pipeline.jobs.list(all=True, **filter_args)
 
 
+def fmt_status(status: str) -> str:
+    colors = {
+        'success': colorama.Fore.GREEN,
+        'failed': colorama.Fore.RED,
+        'running': colorama.Fore.YELLOW,
+        'pending': colorama.Fore.MAGENTA,
+        'created': colorama.Fore.CYAN,
+        'manual': colorama.Fore.BLUE,
+        'canceled': colorama.Fore.MAGENTA,
+    }
+    if status not in colors:
+        return status
+    return colors[status] + status + colorama.Style.RESET_ALL
+
+
 parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument(
     '--version', action='version',
@@ -117,6 +132,8 @@ parser.add_argument(
 
 
 def main():
+    colorama.init()
+
     args = parser.parse_args()
 
     if not args.project:
@@ -150,7 +167,7 @@ def main():
         # of information, so we need an extra HTTP GET to fetch duration
         # and user
         pipeline = project.pipelines.get(pipeline.id)
-        attrs = pipeline.attributes
+        attrs = dict(pipeline.attributes)
         if pipeline.duration is not None:
             template += ", duration {duration_min:.1f}m)"
             pipeline_durations.append(pipeline.duration)
@@ -158,9 +175,10 @@ def main():
         else:
             template += ")"
         if pipeline.status != 'success':
-            template += ' - {status}'
+            template += ' - {color_status}'
         attrs['sha_short'] = attrs['sha'][:8]
         attrs['date'] = attrs['created_at'][:len('YYYY-MM-DD')]
+        attrs['color_status'] = fmt_status(pipeline.status)
         print(template.format_map(attrs))
         if args.debug:
             print("   ", json.dumps(pipeline.attributes))
@@ -170,9 +188,10 @@ def main():
             if args.verbose and job.duration is not None:
                 template = "    {name:30}  {duration_min:4.1f}m"
                 if job.status != 'success':
-                    template += ' - {status}'
+                    template += ' - {color_status}'
                 print(template.format(
                     duration_min=job.duration / 60.0,
+                    color_status=fmt_status(job.status),
                     **job.attributes))
                 if args.debug:
                     print("     ", json.dumps(job.attributes))
