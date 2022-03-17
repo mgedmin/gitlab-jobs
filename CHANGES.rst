@@ -6,7 +6,7 @@ Changelog
 
 - Add Python 3.9 and 3.10 support.
 
-- Drop Python 3.5 support.
+- Drop Python 3.5 and 3.6 support.
 
 - Colorized pipeline and job status output.
 
