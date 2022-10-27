@@ -27,6 +27,7 @@ setup(
     url='https://github.com/mgedmin/gitlab-jobs',
     description='history of GitLab CI job running times',
     long_description=long_description,
+    long_description_content_type='text/x-rst',
     keywords='',
     classifiers=[
         "Development Status :: 4 - Beta",
