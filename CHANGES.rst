@@ -4,7 +4,7 @@ Changelog
 1.2.0 (unreleased)
 ------------------
 
-- Add Python 3.9 and 3.10 support.
+- Add Python 3.9, 3.10, and 3.11 support.
 
 - Drop Python 3.5 and 3.6 support.
 
