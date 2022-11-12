@@ -8,7 +8,7 @@ import csv
 import math
 import signal
 import sys
-from typing import List, Tuple
+from typing import List, Optional, Tuple
 
 # apt install python3-matplotlib
 import matplotlib.pyplot as plt
@@ -35,8 +35,8 @@ def load_csv(filename: str) -> List[JobInfo]:
 def filter_jobs(
     jobs: List[JobInfo],
     *,
-    select: List[str] = None,
-    exclude: List[str] = None,
+    select: Optional[List[str]] = None,
+    exclude: Optional[List[str]] = None,
 ) -> List[JobInfo]:
     result = []
     for job, durations in jobs:
@@ -55,7 +55,7 @@ def disable_sigint_handling() -> None:
     signal.signal(signal.SIGINT, signal.SIG_DFL)
 
 
-def plot_jobs(jobs: List[JobInfo], *, last: int = None) -> None:
+def plot_jobs(jobs: List[JobInfo], *, last: Optional[int] = None) -> None:
     fig, ax = plt.subplots()
     ax.set_title('Duration of build jobs (minutes)', color='#808080',
                  pad=8, fontdict=dict(fontsize=14))
