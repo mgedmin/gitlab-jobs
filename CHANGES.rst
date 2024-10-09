@@ -4,7 +4,7 @@ Changelog
 1.2.1 (unreleased)
 ------------------
 
-- Add Python 3.12 support.
+- Add Python 3.12 and 3.13 support.
 
 
 1.2.0 (2022-10-27)
