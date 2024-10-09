@@ -16,7 +16,7 @@ import colorama
 import gitlab
 
 
-__version__ = '1.2.1.dev0'
+__version__ = '1.2.1'
 
 
 def get_project_name_from_git_url() -> Optional[str]:
